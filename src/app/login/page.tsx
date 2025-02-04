@@ -7,7 +7,7 @@ export default function Login() {
     const router = useRouter();
 
     const handleLogin = () => {
-        router.push("/login");
+        router.push("/dashboard");
     };
 
     const handleRegister = () => {

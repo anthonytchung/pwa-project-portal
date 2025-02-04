@@ -62,7 +62,7 @@ export default function Register() {
           className="border p-2 rounded"
           required
         />
-        {/* <input
+        <input
           type="email"
           name="email"
           placeholder="Email"
@@ -70,7 +70,7 @@ export default function Register() {
           onChange={handleChange}
           className="border p-2 rounded"
           required
-        /> */}
+        />
         <input
           type="password"
           name="password"
