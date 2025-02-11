@@ -1,9 +1,8 @@
+// src/app/projects/new/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/header";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -12,9 +11,10 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DatePickerDemo } from "@/components/ui/datepicker";
+import { DatePicker } from "@/components/ui/datepicker"; // Import your new date picker
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -31,13 +31,10 @@ import {
   CommandEmpty,
   CommandItem,
 } from "@/components/ui/command";
-
-// Import the full JSON dataset of US states and counties
 import statesAndCounties from "@/data/us-states-counties.json";
 
 const NewProjectPage = () => {
   const router = useRouter();
-
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     projectName: "",
@@ -46,14 +43,11 @@ const NewProjectPage = () => {
     state: "",
     county: "",
   });
+  // Add state for the project start date
+  const [startDate, setStartDate] = useState<Date | null>(null);
 
-  // Options for the construction type dropdown.
   const constructionTypes = ["Building", "Heavy", "Highway", "Residential"];
-
-  // Extract state names from the imported JSON data.
   const stateOptions = Object.keys(statesAndCounties);
-
-  // County options depend on the selected state.
   const countyOptions = formData.state ? statesAndCounties[formData.state] : [];
 
   const handleTextChange = (
@@ -67,37 +61,30 @@ const NewProjectPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Send formData to your API to create a new project
+    // Validate that a start date was picked
+    if (!startDate) {
+      setError("Please select a project start date.");
+      return;
+    }
     try {
-      const res = await fetch(
-        "http://localhost:3000/api/projects/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            projectName: formData.projectName,
-            description: formData.description,
-            constructionType: formData.constructionType,
-            state: formData.state,
-            county: formData.county,
-          }),
-        }
-      );
-      const data = await res.json()
+      const res = await fetch("http://localhost:3000/api/projects/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
+          startDate: startDate.toISOString(), // send as ISO string
+        }),
+      });
+      const data = await res.json();
       if (data.error) {
-        setError(data.error); // If there's an error, show it
+        setError(data.error);
       } else {
         router.push("/dashboard");
       }
     } catch (err) {
       setError("An unexpected error occurred.");
-    } finally {
     }
-
-    console.log("Creating project:", formData);
   };
 
   return (
@@ -111,15 +98,10 @@ const NewProjectPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-            {error && <p className="text-red-500 text-center">{error}</p>}
+              {error && <p className="text-red-500 text-center">{error}</p>}
               {/* Project Name */}
               <div>
-                <Label
-                  htmlFor="projectName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Project Name
-                </Label>
+                <Label htmlFor="projectName">Project Name</Label>
                 <Input
                   id="projectName"
                   name="projectName"
@@ -127,17 +109,11 @@ const NewProjectPage = () => {
                   value={formData.projectName}
                   onChange={handleTextChange}
                   required
-                  className="mt-1"
                 />
               </div>
               {/* Description */}
               <div>
-                <Label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Description
-                </Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -146,17 +122,14 @@ const NewProjectPage = () => {
                   onChange={handleTextChange}
                   rows={4}
                   required
-                  className="mt-1"
                 />
               </div>
-              {/* Dropdown for Construction Type */}
+              {/* Construction Type Dropdown */}
               <div>
-                <Label className="block text-sm font-medium text-gray-700">
-                  Construction Type
-                </Label>
+                <Label>Construction Type</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full mt-1">
+                    <Button variant="outline" className="w-full">
                       {formData.constructionType || "Select Type"}
                     </Button>
                   </DropdownMenuTrigger>
@@ -181,14 +154,12 @@ const NewProjectPage = () => {
               </div>
               {/* Inline grouping for State and County */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Searchable Dropdown for State */}
+                {/* State Dropdown */}
                 <div>
-                  <Label className="block text-sm font-medium text-gray-700">
-                    State
-                  </Label>
+                  <Label>State</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full mt-1">
+                      <Button variant="outline" className="w-full">
                         {formData.state || "Select State"}
                       </Button>
                     </PopoverTrigger>
@@ -203,7 +174,7 @@ const NewProjectPage = () => {
                                 setFormData((prev) => ({
                                   ...prev,
                                   state: st,
-                                  county: "", // Reset county when state changes
+                                  county: "",
                                 }))
                               }
                             >
@@ -218,16 +189,14 @@ const NewProjectPage = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                {/* Dropdown for County (dependent on selected state) */}
+                {/* County Dropdown */}
                 <div>
-                  <Label className="block text-sm font-medium text-gray-700">
-                    County
-                  </Label>
+                  <Label>County</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full mt-1"
+                        className="w-full"
                         disabled={!formData.state}
                       >
                         {formData.county ||
@@ -243,7 +212,7 @@ const NewProjectPage = () => {
                           onSelect={() =>
                             setFormData((prev) => ({
                               ...prev,
-                              county: county,
+                              county,
                             }))
                           }
                         >
@@ -253,6 +222,10 @@ const NewProjectPage = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+              </div>
+              {/* Date Picker for Project Start Date */}
+              <div>
+                <DatePicker value={startDate} onChange={setStartDate} />
               </div>
             </CardContent>
             <CardFooter className="flex justify-end">
