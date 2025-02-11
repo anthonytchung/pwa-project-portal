@@ -25,7 +25,18 @@ model Project {
   constructionType String?
   state            String?
   county           String?
+  startDate        DateTime? // New column for project start date
   createdAt        DateTime  @default(now())
   userId           Int
   user             User      @relation(fields: [userId], references: [id])
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  name      String
+  state     String?
+  county    String?
+  laborType String
+  projectId Int
+  createdAt DateTime @default(now())
 }

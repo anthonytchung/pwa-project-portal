@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePickerDemo } from "@/components/ui/datepicker";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,11 +34,10 @@ import {
 
 // Import the full JSON dataset of US states and counties
 import statesAndCounties from "@/data/us-states-counties.json";
-import { userAgent } from "next/server";
 
 const NewProjectPage = () => {
   const router = useRouter();
-  
+
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     projectName: "",
@@ -48,10 +48,7 @@ const NewProjectPage = () => {
   });
 
   // Options for the construction type dropdown.
-  const constructionTypes = [
-    "Residential",
-    "Heavy",
-  ];
+  const constructionTypes = ["Building", "Heavy", "Highway", "Residential"];
 
   // Extract state names from the imported JSON data.
   const stateOptions = Object.keys(statesAndCounties);

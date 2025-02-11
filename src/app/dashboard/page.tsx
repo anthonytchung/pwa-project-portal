@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link"
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,8 @@ type Project = {
   description: string;
   laborType: string;
   county: string;
-  state: string,
+  state: string;
+  startdate: string;
 };
 
 const DashboardPage = () => {
@@ -93,21 +95,28 @@ const DashboardPage = () => {
         ) : (
           projects.map((project) => (
             <Card key={project.id} className="p-4">
-              <CardHeader>
-                <CardTitle>{project.projectName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{project.description}</p>
-                <div className="mt-2 flex gap-2">
-                  <Badge variant="secondary">
-                    State: {project.state}
-                  </Badge>
-                  <Badge variant="secondary">
-                    County: {project.county}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+                <Link href={`projects/${project.id}`}>
+                
+                <CardHeader>
+                  <CardTitle>{project.projectName}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>{project.description}</p>
+                  <div className="mt-2 flex gap-2">
+                    <Badge variant="secondary">
+                      State: {project.state}
+                    </Badge>
+                    <Badge variant="secondary">
+                      County: {project.county}
+                    </Badge>
+                    <Badge variant="secondary">
+                      Created: {project.startdate}
+                    </Badge>
+                  </div>
+                </CardContent>
+                </Link>
+              </Card>
+            
           ))
         )}
       </main>
