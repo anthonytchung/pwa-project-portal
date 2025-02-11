@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +33,12 @@ import {
 
 // Import the full JSON dataset of US states and counties
 import statesAndCounties from "@/data/us-states-counties.json";
+import { userAgent } from "next/server";
 
 const NewProjectPage = () => {
+  const router = useRouter();
+  
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     projectName: "",
     description: "",
@@ -45,9 +50,7 @@ const NewProjectPage = () => {
   // Options for the construction type dropdown.
   const constructionTypes = [
     "Residential",
-    "Commercial",
-    "Industrial",
-    "Infrastructure",
+    "Heavy",
   ];
 
   // Extract state names from the imported JSON data.
@@ -65,9 +68,38 @@ const NewProjectPage = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Send formData to your API to create a new project
+    try {
+      const res = await fetch(
+        "http://localhost:3000/api/projects/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            projectName: formData.projectName,
+            description: formData.description,
+            constructionType: formData.constructionType,
+            state: formData.state,
+            county: formData.county,
+          }),
+        }
+      );
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error); // If there's an error, show it
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+    }
+
     console.log("Creating project:", formData);
   };
 
@@ -82,6 +114,7 @@ const NewProjectPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+            {error && <p className="text-red-500 text-center">{error}</p>}
               {/* Project Name */}
               <div>
                 <Label

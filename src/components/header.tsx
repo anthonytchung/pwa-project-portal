@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
+  
   return (
     <header className="flex items-center justify-between p-4 bg-white shadow">
       {/* Left side: Logo and Company Name */}

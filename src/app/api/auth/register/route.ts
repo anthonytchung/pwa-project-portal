@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";  // Prisma client import
+import { randomUUID } from "crypto";
 
 export async function POST(req: Request) {
   try {

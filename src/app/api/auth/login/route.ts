@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     response.cookies.set("auth-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // only use secure cookies in production
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
       expires: new Date(Date.now() + 60 * 60 * 24 * 14 * 1000), // 14 days from now
     });
