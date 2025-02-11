@@ -14,7 +14,6 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card"; // Card component for layout
-import { signIn } from "next-auth/react"; // NextAuth signIn method
 
 export default function Login() {
   const router = useRouter();

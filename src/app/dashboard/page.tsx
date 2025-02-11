@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import prisma from "@/lib/prisma";
 
 type Project = {
   id: number;
@@ -25,18 +26,8 @@ const DashboardPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (status === "loading") return; // Wait for session to load
-  //   if (!session) {
-  //     router.push("/login"); // Redirect to login if not authenticated
-  //   }
-  // }, [session, status]);
-
-  // if (status === "loading") return <div>Loading...</div>;
-  
-  
-
   // Dummy data simulating API fetch of existing projects
+
   useEffect(() => {
     setProjects([
       {
