@@ -1,5 +1,7 @@
+// src/app/api/auth/register/route.ts
+
 import { NextResponse } from "next/server";
-// import { hash } from "bcryptjs";
+import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";  // Prisma client import
 
 export async function POST(req: Request) {
@@ -7,31 +9,44 @@ export async function POST(req: Request) {
     const { name, email, password } = await req.json();
 
     if (!name || !email || !password) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    // Check if user already exists
+    // Check if a user already exists with the given email
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
     if (existingUser) {
-      return NextResponse.json({ message: "User already exists" }, { status: 400 });
+      return NextResponse.json(
+        { message: "User already exists" },
+        { status: 400 }
+      );
     }
 
-    // Hash password before saving
-    // const hashedPassword = await hash(password, 12);
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Create the user in the database using the hashed password
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password,
+        password: hashedPassword, // Save the hashed password in the "password" field
       },
     });
 
-    return NextResponse.json({ message: "User registered successfully", userId: user.id }, { status: 201 });
+    return NextResponse.json(
+      { message: "User registered successfully", userId: user.id },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error("Registration error:", error);
-    return NextResponse.json({ message: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

@@ -1,4 +1,4 @@
-// src/app/auth/error.tsx
+// src/app/api/auth/error/page.tsx
 "use client";
 import { useRouter } from "next/navigation";
 

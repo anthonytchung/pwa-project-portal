@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,18 +22,17 @@ type Project = {
 };
 
 const DashboardPage = () => {
-  const { data: session, status } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === "loading") return; // Wait for session to load
-    if (!session) {
-      router.push("/login"); // Redirect to login if not authenticated
-    }
-  }, [session, status]);
+  // useEffect(() => {
+  //   if (status === "loading") return; // Wait for session to load
+  //   if (!session) {
+  //     router.push("/login"); // Redirect to login if not authenticated
+  //   }
+  // }, [session, status]);
 
-  if (status === "loading") return <div>Loading...</div>;
+  // if (status === "loading") return <div>Loading...</div>;
   
   
 

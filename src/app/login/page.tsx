@@ -7,7 +7,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"; // Button component from your design system
 import { Input } from "@/components/ui/input"; // Input component from your design system
 import { Label } from "@/components/ui/label"; // Label component from your design system
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"; // Card component for layout
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"; // Card component for layout
 import { signIn } from "next-auth/react"; // NextAuth signIn method
 
 export default function Login() {
@@ -42,16 +48,29 @@ export default function Login() {
 
     try {
       setIsSubmitting(true);
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(result.error); // If there's an error, show it
+      // const result = await signIn("credentials", {
+      //   email: formData.email,
+      //   password: formData.password,
+      //   redirect: false,
+      // });
+      const res = await fetch(
+        "http://localhost:3000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error); // If there's an error, show it
       } else {
-        // Redirect to dashboard after successful login
         router.push("/dashboard");
       }
     } catch (err) {
@@ -80,7 +99,10 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
               <div>
-                <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email
                 </Label>
                 <Input
@@ -97,7 +119,10 @@ export default function Login() {
 
               {/* Password */}
               <div>
-                <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Password
                 </Label>
                 <Input
