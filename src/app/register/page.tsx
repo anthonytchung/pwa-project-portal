@@ -1,41 +1,35 @@
-// src/app/register/page.tsx
-
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button"; // Button component from your design system
-import { Input } from "@/components/ui/input"; // Input component from your design system
-import { Label } from "@/components/ui/label"; // Label component from your design system
-import { Textarea } from "@/components/ui/textarea"; // Textarea component if needed for longer fields
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"; // Card component for layout
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 
 export default function Register() {
   const router = useRouter();
 
-  // Manage form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    role: "DEVELOPER", // default selection
   });
-  const [error, setError] = useState(""); // For handling error messages
-  const [isSubmitting, setIsSubmitting] = useState(false); // For handling loading state
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous error
+    setError("");
 
-    // Simple client-side validation
     if (!formData.name || !formData.email || !formData.password) {
       setError("All fields are required.");
       return;
@@ -55,8 +49,8 @@ export default function Register() {
         const data = await response.json();
         setError(data.message || "Registration failed.");
       } else {
-        // Redirect to login page after successful registration
-        router.push("/login");
+        // On success, redirect to login or wherever you want
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("An unexpected error occurred.");
@@ -79,9 +73,7 @@ export default function Register() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name */}
               <div>
-                <Label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Name
-                </Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   name="name"
@@ -89,15 +81,12 @@ export default function Register() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="mt-1"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   name="email"
@@ -106,15 +95,12 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-1"
                 />
               </div>
 
               {/* Password */}
               <div>
-                <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -123,8 +109,23 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="mt-1"
                 />
+              </div>
+
+              {/* Role Selection */}
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="mt-1 border border-gray-300 rounded px-2 py-1"
+                >
+                  <option value="DEVELOPER">Developer</option>
+                  <option value="EPC">EPC</option>
+                  <option value="SUBCONTRACTOR">Subcontractor</option>
+                </select>
               </div>
 
               <CardFooter className="flex justify-end">

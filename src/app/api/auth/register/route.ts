@@ -7,7 +7,10 @@ import { randomUUID } from "crypto";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const body = await req.json();
+    console.log("Register body:", body);
+
+    const { name, email, password, role} = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -36,6 +39,7 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword, // Save the hashed password in the "password" field
+        role: role,
       },
     });
 

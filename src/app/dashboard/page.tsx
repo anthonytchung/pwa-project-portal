@@ -31,11 +31,12 @@ const DashboardPage = () => {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const res = await fetch("http://localhost:3000/api/projects/retrieve", {
+        const res = await fetch("/api/projects/retrieve", {
           credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
+          console.log(data)
           setProjects(data.projects);
         } else {
           // If the user is unauthorized (e.g. no valid token), redirect to login.
@@ -53,26 +54,6 @@ const DashboardPage = () => {
   if (loading) {
     return <div>Loading...</div>;
   }
-
-  // useEffect(() => {
-  //   setProjects([
-  //     {
-  //       id: 1,
-  //       name: "Project Alpha",
-  //       description: "This is the description for Project Alpha.",
-  //       laborType: "Construction",
-  //       county: "Orange County",
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Project Beta",
-  //       description: "This is the description for Project Beta.",
-  //       laborType: "IT",
-  //       county: "San Francisco",
-  //     },
-  //     // Add more projects as necessary
-  //   ]);
-  // }, []);
 
   const handleCreateProject = () => {
     router.push("/projects/new");
@@ -95,28 +76,34 @@ const DashboardPage = () => {
         ) : (
           projects.map((project) => (
             <Card key={project.id} className="p-4">
-                <Link href={`projects/${project.id}`}>
-                
-                <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
                   <CardTitle>{project.projectName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>{project.description}</p>
-                  <div className="mt-2 flex gap-2">
-                    <Badge variant="secondary">
-                      State: {project.state}
-                    </Badge>
-                    <Badge variant="secondary">
-                      County: {project.county}
-                    </Badge>
-                    <Badge variant="secondary">
-                      Created: {project.startdate}
-                    </Badge>
-                  </div>
-                </CardContent>
-                </Link>
-              </Card>
-            
+                </div>
+
+                {/* Setup Wizard Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/projects/${project.id}/epc-setup`)}
+                >
+                  Setup Wizard
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <p>{project.description}</p>
+                <div className="mt-2 flex gap-2">
+                  <Badge variant="secondary">
+                    State: {project.state}
+                  </Badge>
+                  <Badge variant="secondary">
+                    County: {project.county}
+                  </Badge>
+                  <Badge variant="secondary">
+                    Created: {project.startdate}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
           ))
         )}
       </main>

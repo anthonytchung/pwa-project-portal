@@ -13,13 +13,14 @@ export async function POST(req: NextRequest, { params }: { params: { projectid: 
     // Verify the token and get the user information
     const decoded = jwt.verify(token, process.env.PRIVATEKEY as string) as { userId: number };
     
-    const projectId = parseInt(params.projectid, 10);
-    console.log(decoded.userId)
-    console.log(projectId)
+    const { projectid } = await params;
+    const parsedProjectId = parseInt(projectid, 10);
+    // console.log(decoded.userId)
+    // console.log(projectId)
 
     // Verify that the project exists and belongs to the logged-in user
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { id: parsedProjectId },
     });
     if (!project || project.userId !== decoded.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { projectid: 
       data: {
         name,
         laborType,
-        projectId,
+        projectId: parsedProjectId,
       },
     });
 
