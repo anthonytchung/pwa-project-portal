@@ -1,3 +1,5 @@
+// src/app/register/page.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +7,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 export default function Register() {
   const router = useRouter();
@@ -14,18 +22,22 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
-    role: "DEVELOPER", // default selection
+    role: "DEVELOPER", // or whichever default
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Handle form input changes
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -49,7 +61,6 @@ export default function Register() {
         const data = await response.json();
         setError(data.message || "Registration failed.");
       } else {
-        // On success, redirect to login or wherever you want
         router.push("/dashboard");
       }
     } catch (err) {
@@ -73,7 +84,12 @@ export default function Register() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name */}
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </Label>
                 <Input
                   id="name"
                   name="name"
@@ -81,12 +97,18 @@ export default function Register() {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  className="mt-1"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   name="email"
@@ -95,12 +117,18 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  className="mt-1"
                 />
               </div>
 
               {/* Password */}
               <div>
-                <Label htmlFor="password">Password</Label>
+                <Label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </Label>
                 <Input
                   id="password"
                   name="password"
@@ -109,18 +137,24 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  className="mt-1"
                 />
               </div>
 
-              {/* Role Selection */}
+              {/* Role */}
               <div>
-                <Label htmlFor="role">Role</Label>
+                <Label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Role
+                </Label>
                 <select
                   id="role"
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="mt-1 border border-gray-300 rounded px-2 py-1"
+                  className="mt-1 border border-gray-300 rounded px-2 py-1 w-full"
                 >
                   <option value="DEVELOPER">Developer</option>
                   <option value="EPC">EPC</option>
