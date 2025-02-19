@@ -108,7 +108,7 @@ export default function LocalEPCSetupWizard() {
             </CardHeader>
             <CardContent className="p-0 mt-4">
               <p className="mb-2 text-sm text-gray-600">
-                Below is a list of employees:
+                Employees:
               </p>
               <Separator className="my-2" />
               {employees.map((emp) => (
@@ -170,7 +170,7 @@ export default function LocalEPCSetupWizard() {
               </p>
             </CardContent>
             <CardFooter className="p-0 flex justify-center">
-              <Link href="/epc/dashboard">
+              <Link href="/epc/mockdashboard">
                 <Button variant="default" >
                   Return to Dashboard
                 </Button>

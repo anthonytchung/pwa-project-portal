@@ -48,14 +48,14 @@ export default function MockDashboardPage() {
   const [projects] = useState(mockProjects);
 
   // Mock “Join Project” action
-  const handleJoinProject = () => {
-    console.log("Join Project button clicked (mock)!");
-    // e.g. router.push("/epc/projects/overview");
-  };
+  // const handleJoinProject = () => {
+  //   // console.log("Join Project button clicked (mock)!");
+  //   // e.g. router.push("/epc/projects/overview");
+  // };
 
   // Mock “Create Project” action
   const handleCreateProject = () => {
-    console.log("Create Project button clicked (mock)!");
+    // console.log("Create Project button clicked (mock)!");
     // e.g. router.push("/projects/new");
   };
 
@@ -63,13 +63,16 @@ export default function MockDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-white shadow">
-        <h1 className="text-2xl font-bold">EPC Mock Dashboard</h1>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
         {user && user.role === "DEVELOPER" && (
           <Button onClick={handleCreateProject}>Create Project</Button>
         )}
 
         {user && user.role === "EPC" && (
-          <Button onClick={handleJoinProject}>Join Project</Button>
+          <Link href="/epc/projects/overview">
+            <Button>Join Project</Button>
+          </Link>
+          
         )}
 
         {user && user.role === "SUBCONTRACTOR" && (
@@ -85,6 +88,7 @@ export default function MockDashboardPage() {
           <p className="text-gray-700">No projects found.</p>
         ) : (
           projects.map((project) => (
+            <Link href="/epc/projects/solarfarm">
             <Card key={project.id} className="p-4">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{project.projectName}</CardTitle>
@@ -100,6 +104,8 @@ export default function MockDashboardPage() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
+            
           ))
         )}
       </main>
