@@ -63,7 +63,10 @@ export default function MockDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-white shadow">
+        <Link href="/dashboard">
         <h1 className="text-2xl font-bold">Dashboard</h1>
+        </Link>
+        
         {user && user.role === "DEVELOPER" && (
           <Button onClick={handleCreateProject}>Create Project</Button>
         )}
@@ -88,8 +91,8 @@ export default function MockDashboardPage() {
           <p className="text-gray-700">No projects found.</p>
         ) : (
           projects.map((project) => (
-            <Link href="/epc/projects/solarfarm">
-            <Card key={project.id} className="p-4">
+            <Link key={project.id} href="/epc/projects/solarfarm">
+            <Card  className="p-4">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{project.projectName}</CardTitle>
               </CardHeader>

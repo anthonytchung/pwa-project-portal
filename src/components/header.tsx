@@ -84,10 +84,10 @@ const Header = () => {
       )}
     >
       {/* Header content container */}
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between">
+      <div className="flex w-full  min-w-full max-w-screen-xl items-center justify-between ">
         {/* Left side: Logo */}
         <div className="flex items-center space-x-2">
-          <Link href="/dashboard">
+          <Link href="https://48fund.com/">
             <Image
               src="/48fundlogo.svg"
               alt="Company Logo"
