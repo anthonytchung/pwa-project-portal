@@ -69,7 +69,7 @@ const NewProjectPage = () => {
     // TODO: Send formData to your API to create a new project
     try {
       const res = await fetch(
-        "http://localhost:3000/api/projects/create",
+        "/api/projects/create",
         {
           method: "POST",
           headers: {

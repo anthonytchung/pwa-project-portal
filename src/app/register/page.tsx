@@ -61,7 +61,7 @@ export default function Register() {
         const data = await response.json();
         setError(data.message || "Registration failed.");
       } else {
-        router.push("/dashboard");
+        router.push("/login");
       }
     } catch (err) {
       setError("An unexpected error occurred.");

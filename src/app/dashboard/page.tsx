@@ -66,7 +66,7 @@ const DashboardPage = () => {
   }
 
   const handleCreateProject = () => {
-    router.push("/projects/new");
+    router.push("/developer/projects/setupwizard");
   };
 
   const handleJoinProject = () => {
