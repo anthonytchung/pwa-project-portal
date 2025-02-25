@@ -70,8 +70,8 @@ const DashboardPage = () => {
   };
 
   const handleJoinProject = () => {
-    console.log("REDIRECTING")
-    router.push("/epc/projects/overview");
+    // console.log("REDIRECTING")
+    router.push("/epc/projects/invites");
   }
 
   return (
