@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { fetchProfile } from "@/lib/fetchProfile";
+import { fetchProfile } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";

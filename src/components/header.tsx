@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { fetchProfile } from "@/lib/fetchProfile";
+import { fetchProfile, logout } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // Import dropdown and avatar components from shadcn UI (or your custom ones)
@@ -43,11 +43,7 @@ export default function HeaderWithSidebar() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
+      if (await logout()) {
         setUser(null);
         router.push("/login");
       } else {
@@ -82,34 +78,68 @@ export default function HeaderWithSidebar() {
             WageGuardian
           </span>
           {/* Toggle Button always visible on all screens */}
-          <Button
+          {user && (<Button
             variant="ghost"
             onClick={() => setIsSidebarOpen((prev) => !prev)}
             className="p-2 ml-2"
           >
             {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          </Button>)}
+          
         </div>
 
         {/* Right Side User Menu */}
         <div className="flex items-center space-x-4">
-          
           {user ? (
             <div className="flex items-center space-x-2">
-              <span className="bg-white/20 text-white px-2 py-1 rounded-md text-xs uppercase font-medium tracking-wider">
-                {user.role}
-              </span>
-              <span className="text-sm font-medium">{user.name}</span>
-              <Button variant="ghost" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          ) : (
+            <span className="bg-white/20 text-white px-2 py-1 rounded-md text-xs uppercase font-medium tracking-wider">
+              {user.role}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center space-x-2 hover:bg-white/10"
+                >
+                  <Avatar className="h-8 w-8">
+                    {user.name ? (
+                      <AvatarFallback className="bg-gray-300 text-gray-800">
+                        {user.name?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    ) : null}
+                  </Avatar>
+                  <span className="hidden sm:inline-block text-sm font-medium">
+                    {user.name}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white text-gray-800">
+                <DropdownMenuLabel className="font-semibold">
+                  Signed in as
+                  <div className="font-normal text-gray-600">{user.email}</div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => router.push("/profile")}
+                  className="cursor-pointer"
+                >
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 cursor-pointer"
+                  onSelect={handleLogout}
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>) : (
             <Link href="/login">
-              <Button variant="outline" className="text-white border-white/70 hover:bg-white/10">
-                Login
-              </Button>
-            </Link>
+            <Button variant="ghost" className="font-bold">
+              Login
+            </Button>
+          </Link>
           )}
         </div>
       </header>
