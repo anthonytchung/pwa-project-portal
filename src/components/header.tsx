@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { fetchProfile, logout } from "@/lib/api";
+import { fetchProfile, logout, UserProfile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // Import dropdown and avatar components from shadcn UI (or your custom ones)
@@ -20,12 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
 
 export default function HeaderWithSidebar() {
   const router = useRouter();
@@ -83,7 +77,7 @@ export default function HeaderWithSidebar() {
             onClick={() => setIsSidebarOpen((prev) => !prev)}
             className="p-2 ml-2"
           >
-            {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Menu className="h-6 w-6" />
           </Button>)}
           
         </div>
@@ -173,7 +167,7 @@ export default function HeaderWithSidebar() {
               href="/projects/new"
               className="block px-4 py-2 hover:bg-gray-100 rounded transition-colors"
             >
-              New Project
+              Wage Manager
             </Link>
             <Link
               href="/profile"
