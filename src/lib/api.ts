@@ -6,6 +6,16 @@ export interface UserProfile {
   role: string;
 }
 
+export interface Project {
+  id: number;
+  projectName: string;
+  description: string;
+  laborType: string;
+  county: string;
+  state: string;
+  startdate: string;
+}
+
 /**
  * Fetch the current user's profile.
  */
@@ -22,6 +32,23 @@ export async function fetchProfile(): Promise<UserProfile | null> {
   } catch (error) {
     console.error("Error fetching profile:", error);
     return null;
+  }
+}
+
+export async function fetchProjects(): Promise<Project[]> {
+  try {
+    const res = await fetch("/api/projects/retrieve", {
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.projects;
+    }
+    // Return null if not ok; let the caller decide how to handle it.
+    return [];
+  } catch (error) {
+    console.error("Error fetching projects", error);
+    return [];
   }
 }
 
@@ -92,5 +119,30 @@ export async function register(
   } catch (error) {
     console.error("Error during registration:", error);
     return { success: false, error: "Unexpected error during registration" };
+  }
+}
+
+export async function createProject(formData: {
+  projectName: string;
+  description: string;
+  constructionType: string;
+  state: string;
+  county: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch("/api/projects/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || "Project creation failed" };
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating project:", error);
+    return { success: false, error: "Unexpected error creating project" };
   }
 }

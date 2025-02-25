@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { fetchProfile } from "@/lib/api";
+import { fetchProfile, fetchProjects, Project, UserProfile } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,61 +9,23 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-interface Project {
-  id: number;
-  projectName: string;
-  description: string;
-  laborType: string;
-  county: string;
-  state: string;
-  startdate: string;
-}
-
-interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
 
 const DashboardPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const [user, setUser] = useState<null | UserProfile>(null);
+  const router = useRouter();
+  
 
   useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const res = await fetch("/api/projects/retrieve", {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          // console.log(data)
-          setProjects(data.projects);
-        } else {
-          // If the user is unauthorized (e.g. no valid token), redirect to login.
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Error fetching projects", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    async function loadProfile() {
+    async function loadData() {
       const userData = await fetchProfile();
+      const projectData = await fetchProjects();
       setUser(userData);
+      setProjects(projectData);
     }
 
-    fetchProjects();
-    loadProfile();
+    loadData();
   }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   const handleCreateProject = () => {
     router.push("/developer/projects/setupwizard");

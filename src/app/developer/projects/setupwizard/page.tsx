@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/header";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
   CardTitle,
+  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,156 +32,105 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
-// Import the full JSON dataset of US states and counties
+// Import states and counties JSON
 import statesAndCounties from "@/data/us-states-counties.json";
 
-const NewProjectPage = () => {
+export default function DeveloperSetupWizard() {
   const router = useRouter();
+  const [step, setStep] = useState(1);
 
-  const [error, setError] = useState("");
-  const [formData, setFormData] = useState({
-    projectName: "",
-    description: "",
-    constructionType: "",
-    state: "",
-    county: "",
-  });
+  // Step 1: Project details
+  const [projectName, setProjectName] = useState("");
+  const [description, setDescription] = useState("");
+  const [state, setState] = useState("");
+  const [county, setCounty] = useState("");
+  const [startDate, setStartDate] = useState(""); // ISO string (yyyy-mm-dd)
 
-  // Options for the construction type dropdown.
-  const constructionTypes = ["Building", "Heavy", "Highway", "Residential"];
+  // Step 2: Invite team members
+  const [invitees, setInvitees] = useState<string[]>([]);
+  const [inviteInput, setInviteInput] = useState("");
 
-  // Extract state names from the imported JSON data.
+  // Extract state and county options from JSON
   const stateOptions = Object.keys(statesAndCounties);
+  const countyOptions = state ? statesAndCounties[state] : [];
 
-  // County options depend on the selected state.
-  const countyOptions = formData.state ? statesAndCounties[formData.state] : [];
+  // Navigation functions
+  const goNext = () => setStep((prev) => Math.min(prev + 1, 3));
+  const goBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handleTextChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const addInvitee = () => {
+    if (inviteInput.trim()) {
+      setInvitees((prev) => [...prev, inviteInput.trim()]);
+      setInviteInput("");
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Send formData to your API to create a new project
-    try {
-      const res = await fetch(
-        "/api/projects/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            projectName: formData.projectName,
-            description: formData.description,
-            constructionType: formData.constructionType,
-            state: formData.state,
-            county: formData.county,
-          }),
-        }
-      );
-      const data = await res.json()
-      if (data.error) {
-        setError(data.error); // If there's an error, show it
-      } else {
-        router.push("/dashboard");
-      }
-    } catch (err) {
-      setError("An unexpected error occurred.");
-    } finally {
-    }
-
-    console.log("Creating project:", formData);
+  // Finalize setup (integrate API calls as needed)
+  const handleFinish = () => {
+    // Here you would typically call an API to create the project with the provided details,
+    // and then send out invitation emails to the invitees.
+    // For now, we simply redirect to the dashboard.
+    router.push("/dashboard");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto p-6">
-        <Card>
-          <form onSubmit={handleSubmit}>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold">
-                Create a New Project
+    <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 p-6 flex flex-col items-center">
+      {/* Wizard Title */}
+      <div className="mb-8 text-center space-y-1">
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          Developer Setup Wizard
+        </h1>
+        <p className="text-sm text-gray-600">
+          Complete the steps below to set up your project and invite your team.
+        </p>
+      </div>
+
+      {/* Wizard Container */}
+      <div className="max-w-3xl w-full bg-white/60 backdrop-blur-md rounded-xl shadow-lg p-6">
+        <WizardProgress step={step} />
+
+        {step === 1 && (
+          <Card className="mt-6 border-0 bg-transparent shadow-none">
+            <CardHeader className="p-0">
+              <CardTitle className="text-xl font-bold">
+                Step 1: Project Details
               </CardTitle>
+              <CardDescription className="mt-1 text-gray-500">
+                Enter your project’s basic details.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-            {error && <p className="text-red-500 text-center">{error}</p>}
-              {/* Project Name */}
+            <CardContent className="p-0 mt-4 space-y-4">
               <div>
-                <Label
-                  htmlFor="projectName"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="projectName" className="block text-sm font-medium text-gray-700">
                   Project Name
                 </Label>
                 <Input
                   id="projectName"
                   name="projectName"
-                  placeholder="Enter the project name"
-                  value={formData.projectName}
-                  onChange={handleTextChange}
+                  placeholder="Enter project name"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
                   required
                   className="mt-1"
                 />
               </div>
-              {/* Description */}
               <div>
-                <Label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="description" className="block text-sm font-medium text-gray-700">
                   Description
                 </Label>
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder="Enter a brief project description"
-                  value={formData.description}
-                  onChange={handleTextChange}
+                  placeholder="Enter project description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   required
                   className="mt-1"
                 />
               </div>
-              {/* Dropdown for Construction Type */}
-              <div>
-                <Label className="block text-sm font-medium text-gray-700">
-                  Construction Type
-                </Label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full mt-1">
-                      {formData.constructionType || "Select Type"}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
-                    <DropdownMenuLabel>Construction Type</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {constructionTypes.map((type) => (
-                      <DropdownMenuItem
-                        key={type}
-                        onSelect={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            constructionType: type,
-                          }))
-                        }
-                      >
-                        {type}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              {/* Inline grouping for State and County */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Searchable Dropdown for State */}
+                {/* State Dropdown */}
                 <div>
                   <Label className="block text-sm font-medium text-gray-700">
                     State
@@ -188,7 +138,7 @@ const NewProjectPage = () => {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full mt-1">
-                        {formData.state || "Select State"}
+                        {state || "Select State"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-56 p-0">
@@ -198,13 +148,10 @@ const NewProjectPage = () => {
                           {stateOptions.map((st) => (
                             <CommandItem
                               key={st}
-                              onSelect={() =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  state: st,
-                                  county: "", // Reset county when state changes
-                                }))
-                              }
+                              onSelect={() => {
+                                setState(st);
+                                setCounty("");
+                              }}
                             >
                               {st}
                             </CommandItem>
@@ -217,7 +164,7 @@ const NewProjectPage = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                {/* Dropdown for County (dependent on selected state) */}
+                {/* County Dropdown */}
                 <div>
                   <Label className="block text-sm font-medium text-gray-700">
                     County
@@ -227,41 +174,137 @@ const NewProjectPage = () => {
                       <Button
                         variant="outline"
                         className="w-full mt-1"
-                        disabled={!formData.state}
+                        disabled={!state}
                       >
-                        {formData.county ||
-                          (formData.state ? "Select County" : "Select State First")}
+                        {county || (state ? "Select County" : "Select State First")}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuLabel>County</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      {countyOptions.map((county) => (
-                        <DropdownMenuItem
-                          key={county}
-                          onSelect={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              county: county,
-                            }))
-                          }
-                        >
-                          {county}
+                      {countyOptions.map((c) => (
+                        <DropdownMenuItem key={c} onSelect={() => setCounty(c)}>
+                          {c}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </div>
+              <div>
+                <Label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                  Start Date
+                </Label>
+                <Input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                  className="mt-1"
+                />
+              </div>
             </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button type="submit">Create Project</Button>
+            <CardFooter className="p-0 mt-4 flex justify-end">
+              <Button variant="default" onClick={goNext}>
+                Next
+              </Button>
             </CardFooter>
-          </form>
-        </Card>
+          </Card>
+        )}
+
+        {step === 2 && (
+          <Card className="mt-6 border-0 bg-transparent shadow-none">
+            <CardHeader className="p-0">
+              <CardTitle className="text-xl font-bold">
+                Step 2: Invite Team Members
+              </CardTitle>
+              <CardDescription className="mt-1 text-gray-500">
+                Invite other developers, EPCs, or additional team members by entering their email addresses.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 mt-4 space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter email to invite"
+                  value={inviteInput}
+                  onChange={(e) => setInviteInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button variant="default" onClick={addInvitee}>
+                  Add
+                </Button>
+              </div>
+              {invitees.length > 0 && (
+                <div className="space-y-1">
+                  {invitees.map((email, index) => (
+                    <div key={index} className="text-sm text-gray-700">
+                      {email}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="p-0 mt-4 flex justify-between">
+              <Button variant="outline" onClick={goBack}>
+                Back
+              </Button>
+              <Button variant="default" onClick={goNext}>
+                Next
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+
+        {step === 3 && (
+          <Card className="mt-6 border-0 bg-transparent shadow-none text-center">
+            <CardHeader className="p-0 mb-4">
+              <CardTitle className="text-xl font-bold">All Done!</CardTitle>
+              <CardDescription className="mt-1 text-gray-500">
+                Your project setup is complete. Your project has been created and invitations have been sent.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="p-0 flex justify-center">
+              <Button variant="default" onClick={handleFinish}>
+                Return to Dashboard
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default NewProjectPage;
+function WizardProgress({ step }: { step: number }) {
+  const steps = ["Project Details", "Invite Team", "Finish"];
+  return (
+    <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+      {steps.map((label, idx) => {
+        const stepNumber = idx + 1;
+        const isActive = step === stepNumber;
+        const isComplete = step > stepNumber;
+        const circleClasses = isComplete
+          ? "bg-green-500 text-white"
+          : isActive
+          ? "bg-blue-500 text-white animate-pulse"
+          : "bg-gray-200 text-gray-600";
+        return (
+          <div key={label} className="flex flex-1 items-center last:flex-none relative">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold transition-all ${circleClasses}`}>
+              {isComplete ? "✓" : stepNumber}
+            </div>
+            <div className="ml-2 text-sm font-medium text-gray-700">
+              {label}
+            </div>
+            {idx < steps.length - 1 && (
+              <div className="flex-1 h-[2px] bg-gray-200 mx-2 mt-[-1px]" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
