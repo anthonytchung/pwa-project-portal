@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { fetchProfile } from "@/lib/fetchProfile";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -51,26 +52,13 @@ const DashboardPage = () => {
         setLoading(false);
       }
     }
-    async function fetchProfile() {
-      try {
-        const res = await fetch("/api/profile/retrieve", {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          // Not logged in or unauthorized
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        setUser(null);
-      }
+    async function loadProfile() {
+      const userData = await fetchProfile();
+      setUser(userData);
     }
 
-    fetchProfile();
     fetchProjects();
+    loadProfile();
   }, []);
 
   if (loading) {
@@ -90,7 +78,15 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header using shadcn components */}
       <header className="flex items-center justify-between p-4 bg-white shadow">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        {user && user.role === "DEVELOPER" && (
+          <h1 className="text-2xl font-bold">Developer Dashboard</h1>
+        )}
+        {user && user.role === "EPC" && (
+          <h1 className="text-2xl font-bold">EPC Dashboard</h1>
+        )}
+        {user && user.role === "SUBCONTRACTOR" && (
+          <h1 className="text-2xl font-bold">Subcontractor Dashboard</h1>
+        )}
         {user && user.role === "DEVELOPER" && (
           <Button onClick={handleCreateProject}>Create Project</Button>
         )}

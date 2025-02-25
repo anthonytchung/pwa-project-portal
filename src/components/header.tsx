@@ -1,23 +1,14 @@
-// src/components/header.tsx
+// src/components/HeaderWithSidebar.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-
-// Import optional shadcn dropdown + avatar components
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils"; // if you need class merge
+import { Menu, X } from "lucide-react";
+import { fetchProfile } from "@/lib/fetchProfile"; // Your reusable fetchProfile function
+import { cn } from "@/lib/utils";
 
 interface UserProfile {
   id: number;
@@ -26,30 +17,18 @@ interface UserProfile {
   role: string;
 }
 
-const Header = () => {
+export default function HeaderWithSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<null | UserProfile>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const res = await fetch("/api/profile/retrieve", {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          // Not logged in or unauthorized
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        setUser(null);
-      }
+    async function loadProfile() {
+      const profile = await fetchProfile();
+      setUser(profile);
     }
-    fetchProfile();
+    loadProfile();
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -69,23 +48,16 @@ const Header = () => {
     }
   };
 
-  // If you don’t want to show the header at all when not logged in, 
-  // you can conditionally return null here:
-  // if (!user) return null;
-
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 px-4 py-3",
-        // Modern “2025 look”: glassy + gradient + subtle shadow
-        "shadow-md backdrop-blur-lg",
-        // Gradient from left to right
-        "bg-gradient-to-r from-blue-500/70 via-sky-400/60 to-violet-500/70 text-white"
-      )}
-    >
-      {/* Header content container */}
-      <div className="flex w-full  min-w-full max-w-screen-xl items-center justify-between ">
-        {/* Left side: Logo */}
+    <>
+      {/* Header */}
+      <header
+        className={cn(
+          "sticky top-0 z-50 flex items-center justify-between px-4 py-3",
+          "shadow-md backdrop-blur-lg",
+          "bg-gradient-to-r from-blue-500/70 via-sky-400/60 to-violet-500 text-white"
+        )}
+      >
         <div className="flex items-center space-x-2">
           <Link href="https://48fund.com/">
             <Image
@@ -101,74 +73,72 @@ const Header = () => {
           </span>
         </div>
 
-        {/* Right side: user or login link */}
-        <div className="flex items-center space-x-4">
+        {/* Toggle Sidebar Button */}
+        <div className="md:hidden">
+          <Button
+            variant="ghost"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            className="p-2"
+          >
+            {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
+        </div>
+
+        {/* Right Side User Menu */}
+        <div className="hidden md:flex items-center space-x-4">
           {user ? (
             <div className="flex items-center space-x-2">
-              {/* Possibly show role as a badge-like element */}
-              <span className="hidden sm:inline-block bg-white/20 text-white px-2 py-1 rounded-md text-xs uppercase font-medium tracking-wider">
+              <span className="bg-white/20 text-white px-2 py-1 rounded-md text-xs uppercase font-medium tracking-wider">
                 {user.role}
               </span>
-
-              {/* Dropdown with user avatar + name */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2 hover:bg-white/10">
-                    <Avatar className="h-8 w-8">
-                      {/* If you had a user image, <AvatarImage src={user.image} /> */}
-                      <AvatarImage src="" alt={user.name} />
-                      <AvatarFallback className="bg-gray-300 text-gray-800">
-                        {user.name?.[0]?.toUpperCase() ?? "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden sm:inline-block text-sm font-medium">
-                      {user.name}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent align="end" className="w-56 bg-white text-gray-800">
-                  <DropdownMenuLabel className="font-semibold">
-                    Signed in as
-                    <div className="font-normal text-gray-600">{user.email}</div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {/* Possibly link to a Profile or Settings page */}
-                  <DropdownMenuItem
-                    onSelect={() => router.push("/profile")}
-                    className="cursor-pointer"
-                  >
-                    My Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => router.push("/dashboard")}
-                    className="cursor-pointer"
-                  >
-                    Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-red-600 cursor-pointer"
-                    onSelect={handleLogout}
-                  >
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <span className="text-sm font-medium">{user.name}</span>
+              <Button variant="ghost" onClick={handleLogout}>
+                Logout
+              </Button>
             </div>
-          ) : (!(pathname == "/login" || "/register") && (
-            // If not logged in, show a big “Login” or “Register” button
-            
+          ) : (
             <Link href="/login">
               <Button variant="outline" className="text-white border-white/70 hover:bg-white/10">
                 Login
               </Button>
             </Link>
-          ))}
+          )}
         </div>
-      </div>
-    </header>
-  );
-};
+      </header>
 
-export default Header;
+      {/* Integrated Sidebar (visible on mobile when toggled, and can also be visible on desktop if desired) */}
+      <aside
+        className={cn(
+          "fixed top-16 left-0 h-full w-56 bg-white shadow-lg transition-transform duration-300 ease-in-out z-40",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "md:translate-x-0" // Remove or adjust this if you want desktop to always show the sidebar
+        )}
+      >
+        <div className="p-4">
+          <h2 className="text-xl font-bold mb-4">Navigation</h2>
+          <nav className="flex flex-col space-y-2">
+            <Link
+              href="/dashboard"
+              className="block px-4 py-2 hover:bg-gray-100 rounded transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/projects/new"
+              className="block px-4 py-2 hover:bg-gray-100 rounded transition-colors"
+            >
+              New Project
+            </Link>
+            <Link
+              href="/profile"
+              className="block px-4 py-2 hover:bg-gray-100 rounded transition-colors"
+            >
+              Profile
+            </Link>
+            {/* Additional nav items can be added here */}
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
+}
