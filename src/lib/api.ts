@@ -4,15 +4,20 @@ export interface UserProfile {
   name: string;
   email: string;
   role: string;
+  company: string;
 }
 
 export interface Project {
   id: number;
   projectName: string;
   description: string;
-  laborType: string;
-  county: string;
-  state: string;
+  constructionType: string;
+  latitude: Float32Array;
+  longitude: Float32Array;
+  invitees: string;
+  photoUrl: string;
+  companyLogo: string;
+  createdAt: string;
   startdate: string;
 }
 
@@ -144,5 +149,22 @@ export async function createProject(formData: {
   } catch (error) {
     console.error("Error creating project:", error);
     return { success: false, error: "Unexpected error creating project" };
+  }
+}
+
+
+export async function fetchProjectById(projectId: string): Promise<Project | null> {
+  try {
+    const res = await fetch(`/api/projects/${projectId}`, {
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.project; // Adjust this according to your API response
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return null;
   }
 }

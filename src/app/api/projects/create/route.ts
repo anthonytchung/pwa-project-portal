@@ -10,15 +10,26 @@ export async function POST(req: NextRequest) {
 
   try {
     const decoded = jwt.verify(token, process.env.PRIVATEKEY as string) as {
-          userId: number;
-          email: string;
-        };
-    // console.log(decoded.userId);
+      userId: number;
+      email: string;
+    };
 
-    const { projectName, description, constructionType, state, county } = await req.json();
+    const {
+      projectName,
+      description,
+      constructionType,
+      startDate,
+      location,
+      invitees
+    } = await req.json();
+    console.log(startDate)
+
 
     if (!projectName || !description) {
-      return NextResponse.json({ message: "Project name and description are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Project name and description are required" },
+        { status: 400 }
+      );
     }
 
     const project = await prisma.project.create({
@@ -26,14 +37,21 @@ export async function POST(req: NextRequest) {
         projectName,
         description,
         constructionType,
-        state,
-        county,
+        startDate: startDate ? new Date(startDate) : null,
+        latitude: location?.lat,
+        longitude: location?.lng,
+        invitees: invitees ? JSON.stringify(invitees) : "null",
         userId: decoded.userId,
       },
     });
 
-    return NextResponse.json({ message: "Project created successfully", projectId: project.id }, { status: 201 });
+    return NextResponse.json(
+      { message: "Project created successfully", projectId: project.id },
+      { status: 201 }
+    );
   } catch (error: any) {
-    return NextResponse.json({ message: error.message || "Internal Server Error" }, { status: 500 });
+    console.error("Project creation error:", error);
+    const errorMessage = error?.message || "Internal Server Error";
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }

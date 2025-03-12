@@ -31,9 +31,50 @@ import {
   CommandEmpty,
   CommandItem,
 } from "@/components/ui/command";
-
-// Import states and counties JSON
 import statesAndCounties from "@/data/us-states-counties.json";
+import dynamic from "next/dynamic";
+
+// Dynamically import react-leaflet components with SSR disabled
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+const useMapEvents = dynamic(
+  () => import("react-leaflet").then((mod) => mod.useMapEvents),
+  { ssr: false }
+);
+
+// Component for picking a location on the map
+function LocationPicker({
+  position,
+  setPosition,
+}: {
+  position: [number, number];
+  setPosition: (pos: [number, number]) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return position ? (
+    <Marker position={position}>
+      <Popup>Selected Location</Popup>
+    </Marker>
+  ) : null;
+}
 
 export default function DeveloperSetupWizard() {
   const router = useRouter();
@@ -42,19 +83,17 @@ export default function DeveloperSetupWizard() {
   // Step 1: Project details
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
-  const [state, setState] = useState("");
-  const [county, setCounty] = useState("");
-  const [startDate, setStartDate] = useState(""); // ISO string (yyyy-mm-dd)
+  const [startDate, setStartDate] = useState("");
+  // Store selected location coordinates (default sample)
+  const [location, setLocation] = useState<[number, number]>([41.8781, -87.6298]);
 
   // Step 2: Invite team members
   const [invitees, setInvitees] = useState<string[]>([]);
   const [inviteInput, setInviteInput] = useState("");
 
-  // Extract state and county options from JSON
   const stateOptions = Object.keys(statesAndCounties);
-  const countyOptions = state ? statesAndCounties[state] : [];
+  // const countyOptions = state ? statesAndCounties[state] : [];
 
-  // Navigation functions
   const goNext = () => setStep((prev) => Math.min(prev + 1, 3));
   const goBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
@@ -65,36 +104,49 @@ export default function DeveloperSetupWizard() {
     }
   };
 
-  // Finalize setup (integrate API calls as needed)
   const handleFinish = () => {
-    // Here you would typically call an API to create the project with the provided details,
-    // and then send out invitation emails to the invitees.
-    // For now, we simply redirect to the dashboard.
-    router.push("/dashboard");
+    // Here, make an API POST request to create the project with all details.
+    // For example, using fetch:
+    fetch("/api/projects/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        projectName,
+        description,
+        constructionType: "", // or provide if needed
+        startDate,
+        location: { lat: location[0], lng: location[1] },
+        invitees,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Project creation failed");
+        return res.json();
+      })
+      .then(() => {
+        router.push("/dashboard");
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to create project");
+      });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 p-6 flex flex-col items-center">
-      {/* Wizard Title */}
       <div className="mb-8 text-center space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight">
-          Developer Setup Wizard
-        </h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">Developer Setup Wizard</h1>
         <p className="text-sm text-gray-600">
           Complete the steps below to set up your project and invite your team.
         </p>
       </div>
-
-      {/* Wizard Container */}
       <div className="max-w-3xl w-full bg-white/60 backdrop-blur-md rounded-xl shadow-lg p-6">
         <WizardProgress step={step} />
-
         {step === 1 && (
           <Card className="mt-6 border-0 bg-transparent shadow-none">
             <CardHeader className="p-0">
-              <CardTitle className="text-xl font-bold">
-                Step 1: Project Details
-              </CardTitle>
+              <CardTitle className="text-xl font-bold">Step 1: Project Details</CardTitle>
               <CardDescription className="mt-1 text-gray-500">
                 Enter your project’s basic details.
               </CardDescription>
@@ -129,12 +181,9 @@ export default function DeveloperSetupWizard() {
                   className="mt-1"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {/* State Dropdown */}
+              {/* <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="block text-sm font-medium text-gray-700">
-                    State
-                  </Label>
+                  <Label className="block text-sm font-medium text-gray-700">State</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full mt-1">
@@ -156,26 +205,17 @@ export default function DeveloperSetupWizard() {
                               {st}
                             </CommandItem>
                           ))}
-                          {stateOptions.length === 0 && (
-                            <CommandEmpty>No state found</CommandEmpty>
-                          )}
+                          {stateOptions.length === 0 && <CommandEmpty>No state found</CommandEmpty>}
                         </CommandList>
                       </Command>
                     </PopoverContent>
                   </Popover>
                 </div>
-                {/* County Dropdown */}
                 <div>
-                  <Label className="block text-sm font-medium text-gray-700">
-                    County
-                  </Label>
+                  <Label className="block text-sm font-medium text-gray-700">County</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full mt-1"
-                        disabled={!state}
-                      >
+                      <Button variant="outline" className="w-full mt-1" disabled={!state}>
                         {county || (state ? "Select County" : "Select State First")}
                       </Button>
                     </DropdownMenuTrigger>
@@ -190,7 +230,7 @@ export default function DeveloperSetupWizard() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
+              </div> */}
               <div>
                 <Label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
                   Start Date
@@ -205,21 +245,31 @@ export default function DeveloperSetupWizard() {
                   className="mt-1"
                 />
               </div>
+              <div>
+                <Label className="block text-sm font-medium text-gray-700">Project Location</Label>
+                <div className="h-64 mt-1 rounded-md overflow-hidden">
+                  <MapContainer center={location} zoom={13} scrollWheelZoom={false} className="h-full w-full">
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <LocationPicker position={location} setPosition={setLocation} />
+                  </MapContainer>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  Click on the map to select the project location.
+                </p>
+              </div>
             </CardContent>
             <CardFooter className="p-0 mt-4 flex justify-end">
-              <Button variant="default" onClick={goNext}>
-                Next
-              </Button>
+              <Button variant="default" onClick={goNext}>Next</Button>
             </CardFooter>
           </Card>
         )}
-
         {step === 2 && (
           <Card className="mt-6 border-0 bg-transparent shadow-none">
             <CardHeader className="p-0">
-              <CardTitle className="text-xl font-bold">
-                Step 2: Invite Team Members
-              </CardTitle>
+              <CardTitle className="text-xl font-bold">Step 2: Invite Team Members</CardTitle>
               <CardDescription className="mt-1 text-gray-500">
                 Invite other developers, EPCs, or additional team members by entering their email addresses.
               </CardDescription>
@@ -233,31 +283,22 @@ export default function DeveloperSetupWizard() {
                   onChange={(e) => setInviteInput(e.target.value)}
                   className="flex-1"
                 />
-                <Button variant="default" onClick={addInvitee}>
-                  Add
-                </Button>
+                <Button variant="default" onClick={addInvitee}>Add</Button>
               </div>
               {invitees.length > 0 && (
                 <div className="space-y-1">
                   {invitees.map((email, index) => (
-                    <div key={index} className="text-sm text-gray-700">
-                      {email}
-                    </div>
+                    <div key={index} className="text-sm text-gray-700">{email}</div>
                   ))}
                 </div>
               )}
             </CardContent>
             <CardFooter className="p-0 mt-4 flex justify-between">
-              <Button variant="outline" onClick={goBack}>
-                Back
-              </Button>
-              <Button variant="default" onClick={goNext}>
-                Next
-              </Button>
+              <Button variant="outline" onClick={goBack}>Back</Button>
+              <Button variant="default" onClick={goNext}>Next</Button>
             </CardFooter>
           </Card>
         )}
-
         {step === 3 && (
           <Card className="mt-6 border-0 bg-transparent shadow-none text-center">
             <CardHeader className="p-0 mb-4">
@@ -267,9 +308,7 @@ export default function DeveloperSetupWizard() {
               </CardDescription>
             </CardHeader>
             <CardFooter className="p-0 flex justify-center">
-              <Button variant="default" onClick={handleFinish}>
-                Return to Dashboard
-              </Button>
+              <Button variant="default" onClick={handleFinish}>Return to Dashboard</Button>
             </CardFooter>
           </Card>
         )}
@@ -296,9 +335,7 @@ function WizardProgress({ step }: { step: number }) {
             <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold transition-all ${circleClasses}`}>
               {isComplete ? "✓" : stepNumber}
             </div>
-            <div className="ml-2 text-sm font-medium text-gray-700">
-              {label}
-            </div>
+            <div className="ml-2 text-sm font-medium text-gray-700">{label}</div>
             {idx < steps.length - 1 && (
               <div className="flex-1 h-[2px] bg-gray-200 mx-2 mt-[-1px]" />
             )}

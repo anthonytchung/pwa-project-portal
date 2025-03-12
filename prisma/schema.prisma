@@ -1,8 +1,8 @@
 // prisma/schema.prisma
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // Path to your SQLite database
+  provider = "postgresql"
+  url      = env("DB_URL")
 }
 
 generator client {
@@ -24,20 +24,12 @@ model Project {
   projectName      String
   description      String
   constructionType String?
-  state            String?
-  county           String?
-  startDate        DateTime? // New column for project start date
+  startDate        DateTime? // Already exists
+  latitude         Float?
+  longitude        Float?
+  invitees         String?   // You might store this as a JSON string, or create a separate relation/model if needed.
   createdAt        DateTime  @default(now())
   userId           Int
   user             User      @relation(fields: [userId], references: [id])
 }
 
-model Employee {
-  id        Int      @id @default(autoincrement())
-  name      String
-  state     String?
-  county    String?
-  laborType String
-  projectId Int
-  createdAt DateTime @default(now())
-}

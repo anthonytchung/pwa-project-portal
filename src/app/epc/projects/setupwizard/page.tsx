@@ -66,7 +66,7 @@ export default function LocalEPCSetupWizard() {
             <CardHeader className="p-0">
               <CardTitle className="text-xl font-bold">Step 1: Link Payroll</CardTitle>
               <CardDescription className="mt-1 text-gray-500">
-                Choose or simulate linking your payroll provider (mock).
+                Choose your payroll provider.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 mt-4">
